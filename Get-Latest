@@ -1,0 +1,249 @@
+param(
+$server,#="artif0acvnd01:8081",
+$repo,#="unum-nuget-local",
+$artifact#="HAMConfigFiles.1.*.*.nupkg"
+
+)
+try{
+   cls
+
+
+    #--------------------------------------------------------------------------------------------------------
+                            $authorization="Basic RDFGOThaUzc6N1FCaE5FMXQ5aA=="
+    #--------------------------------------------------------------------------------------------------------
+
+
+
+
+     $va=@()
+     $inpu=@()
+
+
+            $url="http://$server/artifactory/api/search/artifact?name=$artifact&repos=$repo"
+            
+       
+            
+            $header = @{"Content-Type" = "application/json"; "authorization"=$authorization} # Here we need to enter our user id and password   
+            $result1 =  Invoke-WebRequest -Uri $url -Method GET  -headers $header # it will pull all values from artifact
+          
+                                                    $x = $result1 | ConvertFrom-Json
+                                              
+                                         
+                                              
+             foreach ($uri in $x.results) {
+                                               
+                                                  $inp=$uri.uri;
+                                                  
+                                                  $inpu+=@($inp)
+                                               
+                                                  
+                                                   $call=$inp| select -uniq|% { ($_ -split '/') }
+                                            
+                   
+                                                     $input2=$call.split(" ")|where {$_ -ne ""}|where {$_ -ne $server}|where {$_ -ne $repo}|where {$_ -ne "api"}| where {$_ -ne "artifactory"}|where {$_ -ne "storage"}
+                                                     $vas=$input2.split('"')|where {$_ -ne ""}|where {$_ -ne "uri"}|where {$_ -ne ":"}|where{$_ -ne "http:"}
+                                                         #$vas[0]
+                                               #$vas.count
+                                                if($vas.count -gt 1)
+                                                {
+                                              
+                                                $vad=$vas[-1]
+                                                $va+=@($vad)
+                                           
+                                                }
+                                                else
+                                                {
+
+                                                         $va+=@($vas)
+                                                         
+                                                 }       
+      
+                                                 }
+                                                 
+
+                                                  
+                 
+                 
+                 
+                  #$Artifact="SonarQubeWebApplication.1.*.*.*.nupkg"
+                    $ad=$artifact.split(".")
+                    $adw=$ad|where{$_ -ne $ad[-1]}|where{$_ -ne $ad[-2]}|where{$_ -ne $ad[-3]}|where{$_ -ne $ad[-4]}|where{$_ -ne $ad[-5]}
+                        
+
+
+                       $va=$va|where{$_ -ne $adw}
+
+                  
+                    
+
+
+
+
+                    $vum=$artifact.split(".")
+                       $ke=$vum.count
+
+                       for($re=0; $re -le $ke; $re++)
+                       {
+                           $va=$va|where{$_ -ne $vum[$re]}
+                       
+                       
+                       
+                       
+                       
+                       }
+                  
+                     
+                    
+                     $aw=$artifact
+                                            $xe=".nupkg"
+                                            $n=$aw.replace("$xe","")
+
+
+
+                                                                            $awt=$aw.split(".")
+                                                                            if($awt[-5] -eq "*")
+                                                                            {
+                                                                            $ne=$n.replace("*.*.*.*","")
+                                                                            }
+                                                                            else
+
+                                                                            {
+
+
+                                          
+                                                                            $ne=$n.replace("*.*.*","")
+                                                                            }
+                                            $ne=$ne.replace(" ","")
+                                            $am=$ne.split(".")
+                                            $am=$am|where {$_ -ne ""}  
+                                          
+                                        
+                        if($am[-1] -match “[0-9]”)
+
+                                            {
+                                                $nm=$am[-1]
+
+                                                $ned=$am.replace("$nm","")
+                                                $ned=$ned|where {$_ -ne ""}
+                                                $np="$ned"
+                                                $nq=$np.replace(" ","/")
+                                                $gw=$np.replace(" ",".")
+                                                $path=$nq+"/"+$gw+"/"
+                                                 
+                                            
+                                            $va=$va|where{$_ -ne $gw} 
+                                                 # $path
+                                            }
+
+                                               else
+                                             {
+
+ 
+                                                $kum="$am"
+                                                    $kumr=$kum.replace(" ","/")
+                                                    $kr=$kum.replace(" ",".")
+
+                                                  $va=$va|where{$_ -ne $kr} 
+                                                 
+                                                
+                                                    }   
+
+
+
+                                                    
+
+              
+                
+                  
+                  if($va.count -eq 0)
+          {
+          [int]$mk=0
+          write-output "VERSION=$mk" |Out-File ".\latest.txt" -Encoding ASCII
+"----------------------Warning--------------------------------------------"
+"----------------------Please check Artifact name--------------------------"
+"-----------------------Ignore warning if this project is new---------------"
+         $mk
+          }
+      else{
+
+          #if($Path -ne "null")
+                 #{
+                 #   $var=$va.replace("$Path","")
+               # }
+            # else
+                #{
+               # $var=$va.replace("null","")
+                 #   }                             
+
+                                        $xe=".nupkg"
+                                        $na=$artifact.replace("$xe","")
+
+                                          $awt=$aw.split(".")
+                                                                            if($awt[-4] -eq "*")
+                                                                            {
+                                                                            $ne=$n.replace("*.*.*","")
+                                                                            }
+                                                                            else
+
+                                                                            {
+
+
+                                          
+                                                                            $ne=$n.replace("*.*","")
+                                                                            }
+
+
+
+                                      
+                                        $va1=$va.replace("$ne","")   
+                                        $v=$va1.replace("$xe","") 
+                                            
+                                        $value=$v|%{[System.Version]$_}|sort
+                                       
+                                        [array]$i=$value[-1]
+                                        $a=$ne+$i+$xe
+                                      
+                                       $b=$a.split(".")
+
+                                       
+                                       $va=$b[-4]
+                                       
+                                       $c=$b[-3]
+                                       
+                                       [int]$d=$b[-2]
+                                        $d=$d+1
+                                   
+
+                                      if($b[-5] -match “[0-9]”)
+                                       {
+                                       $gh=$b[-5]
+                                   
+                                       $de=$gh+"."+$va+"."+$c+"."+$d
+
+
+                                       }
+
+
+else{
+
+                                       
+								  
+
+$de=$va+"."+$c+"."+$d
+}
+                                    
+Clear-Content ".\latest.txt"
+
+write-output "VERSION=$de" |Out-File ".\latest.txt" -Encoding ASCII
+"Next Build Version to be created "
+$de
+                                 }
+                                 }
+
+catch{
+       Write-host $_.Exception.Message
+        exit (1)
+}                                     
+                                                 
+                            
+                                         
