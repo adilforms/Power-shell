@@ -1,0 +1,466 @@
+  param( 
+        $Server,#="artif0acvnd01:8081",
+        $Repo,#="nuget-local", #Artifactory repository Browser
+       
+        $Artifact,#="HAMConfigFiles.*.*.*.nupkg",# Artifactory name with version number for 4 values ypu need to enter 13.*.*.*.nupkg and for 3 values *.*.*.nupkg
+        $Artifacts_ToKeep,#=2 ,#number of versions to keep
+        $Delete_1_Not_2#=1 #to confirm deletion
+        )
+      try{  
+
+   $va=@()
+     $inpu=@()
+
+    cls
+     #--------------------------------------------------------------------------------------------------------
+                            $authorization="******************************************"
+    #--------------------------------------------------------------------------------------------------------
+
+
+    $va=@()
+     $inpu=@()
+
+
+            $url="http://$server/artifactory/api/search/artifact?name=$artifact&repos=$repo"
+            
+       
+            
+            $header = @{"Content-Type" = "application/json"; "authorization"=$authorization} # Here we need to enter our user id and password   
+            $result1 =  Invoke-WebRequest -Uri $url -Method GET  -headers $header # it will pull all values from artifact
+          
+                                                    $x = $result1 | ConvertFrom-Json
+                                             
+                                              
+             foreach ($uri in $x.results) {
+                                               
+                                                  $inp=$uri.uri;
+                                                  
+                                                  $inpu+=@($inp)
+                                               
+                                                  
+                                                   $call=$inp| select -uniq|% { ($_ -split '/') }
+                                            
+                   
+                                                     $input2=$call.split(" ")|where {$_ -ne ""}|where {$_ -ne $server}|where {$_ -ne $repo}|where {$_ -ne "api"}| where {$_ -ne "artifactory"}|where {$_ -ne "storage"}
+                                                     $vas=$input2.split('"')|where {$_ -ne ""}|where {$_ -ne "uri"}|where {$_ -ne ":"}|where{$_ -ne "http:"}
+                                                         #$vas[0]
+                                               #$vas.count
+                                                if($vas.count -gt 1)
+                                                {
+                                              
+                                                $vad=$vas[-1]
+                                                $va+=@($vad)
+                                           
+                                                }
+                                                else
+                                                {
+
+                                                         $va+=@($vas)
+                                                         
+                                                 }       
+      
+                                                 }
+
+#"kkk"
+#$va
+ #$va=@()
+# "lll"
+# $vas=$vas.replace($vas[-1])
+
+
+                                             $ad=$artifact.split(".")
+                                             $adw=$ad|where{$_ -ne $ad[-1]}|where{$_ -ne $ad[-2]}|where{$_ -ne $ad[-3]}|where{$_ -ne $ad[-4]}|where{$_ -ne $ad[-5]}
+                        
+                    
+
+                                                                  $va=$va|where{$_ -ne $adw}
+                                                                  $vum=$artifact.split(".")
+                                                                  $ke=$vum.count
+                                          
+                                        #--------------------------------------------------------------------------------------
+                                        for($re=0; $re -le $ke; $re++)
+                                                    {
+                                                        $va=$va|where{$_ -ne $vum[$re]}
+                                        
+                                                              }
+                  
+                      
+                                         #--------------------------------------------------------------------
+                                                                            $aw=$artifact
+                                                                            $xe=".nupkg"
+                                                                            $n=$aw.replace("$xe","")
+
+                                                                            $awt=$aw.split(".")
+                                                                            if($awt[-4] -eq "*")
+                                                                            {
+                                                                            $ne=$n.replace("*.*.*","")
+                                                                            }
+                                                                            else
+
+                                                                            {
+
+                                                                            
+                                          
+                                                                            $ne=$n.replace("*.*","")
+                                                                            }
+                                                                            
+                                                                            
+                                                                            
+                                                                            
+                                                                            $ne=$ne.replace(" ","")
+                                                                            $am=$ne.split(".")
+                                                                            $am=$am|where {$_ -ne ""} 
+                                                                           
+                                          
+                            #------------------------------------------------------------------                        
+
+                        if($am[-1] -match “[0-9]”)
+
+                                                                            {
+                                                                       
+                                                                                $nm=$am[-1]
+
+                                                                                $ned=$am.replace("$nm","")
+                                                                                $ned=$ned|where {$_ -ne ""}
+                                                                                $np="$ned"
+                                                                                $nq=$np.replace(" ","/")
+                                                                                $gw=$np.replace(" ",".")
+                                                                                $path=$nq+"/"+$gw+"/"
+                                                                               
+                                                 
+                                            
+                                                                            $va=$va|where{$_ -ne $gw} 
+                                                                            
+                                                                            
+                                          
+                                                
+                                                                            }
+
+                            else
+                                                                             {
+
+ 
+                                                                                $kum="$am"
+                                                                                    $kumr=$kum.replace(" ","/")
+                                                                                    $kr=$kum.replace(" ",".")
+                                                                                    $path=$kumr+"/"+$kr+"/"
+
+                                                                                  $va=$va|where{$_ -ne $kr} 
+                                                                                
+                                               
+                                                                                    }   
+
+                                          #------------------------------------------------------------------------
+                                      
+                           if($va.count -eq 0)
+                                                     {
+                                                               "---------------------------------WARNING----------------------------------"
+                                                               "--------------------PLEASE CHECK YOUR PROJECT NAME------------------------"
+                                                               "-----------IGNORE THIS WARNING IF THIS PROJECT IS NEW---------------------"
+                                                     }
+   
+      else{
+   
+   
+   
+   
+   
+                                                       if($Path -eq "null")
+                                                                     {
+                                                                        $var=$va.replace("$Path","/")
+                    #
+                 
+                                                                    }
+             
+                                                                  else{
+                                                                  $var=$va.replace("$Path","")
+       
+                                                                            }
+                                       
+                        #------------------------------------------------------------                              
+                                                $awst=$Artifact.split(".")
+                                                
+                                                $xe=".nupkg"
+                                                $na=$Artifact.replace("$xe","")
+                                                
+
+                                                                           if($awst[-4] -eq "*")
+                                                                            {
+                                                                            $ne=$na.replace("*.*.*","")
+                                                                            }
+                                                                            else
+
+                                                                            {
+
+
+                                          
+                                                                            $ne=$na.replace("*.*","")
+                                                                            }
+
+
+
+
+                                               
+                                       
+                                                $va1=$var.replace("$ne","")
+                                               
+             
+             
+                                                $v=$va1.replace("$xe","")
+                                               
+             
+              
+                                                [array]$value=$v|%{[System.Version]$_}|sort
+                                               # $va=@()
+                                  
+                                               $de=$value.count
+                                      
+                                   
+           
+          
+                
+     if($de -gt $Artifacts_ToKeep) 
+      {
+                              
+                                             $de=$de-$Artifacts_ToKeep
+                                            $de=$de-1   
+                                                            
+                                                   
+    
+                      #--------
+                        for ([int]$i=0; $i -le $de; $i++)
+                                                 { 
+                               
+                      
+                                                         $ar=$ne+$value[$i]+$xe
+                                 
+                            
+                                                 
+                                
+                                                          $delt+=@($ar)
+                                   
+                                                         }
+                                 
+                                         
+                              
+                            #----------------
+         
+         
+                                 
+                   #--------------------------------------------
+     
+                 
+           
+            
+       #----------------------------------    
+                    if($Delete_1_Not_2 -eq "1")
+                    {
+                                              
+     #-----------------------
+  #   $de
+                          
+                                                        for ([int]$i=0; $i -le $de; $i++)
+          #-------------
+                                               { 
+                                                                 $ar=$ne+$value[$i]+$xe
+                                                              
+
+                                                                
+
+                                                                                     #____-
+                                                                               
+                                                                                 if($inpu.count -gt 1)
+                                                                                     {
+                                                                                     #$inpu[0]
+                                                                                             [array]$input=$inpu[0]
+
+                                                                                      
+                                                                                    
+                                                                                     }
+                                                                                     else
+                                                                                     {
+                                                                                     "error"
+                                                                                     }
+                                                                                   
+
+                                                                                    $input=$input.split("/")
+                                                                                    $input=$input.split(" ")
+                                                                                    $input=$input.split('"')
+                                                                                    #$input=$input| select -uniq
+                                                                                   
+                                                                                
+
+                                                                                    $input=$input|where{$_ -ne $server}|where{$_ -ne "artifactory"}|where{$_ -ne "api"}|where{$_ -ne "storage"}|where{$_ -ne " "}|where{$_ -ne "uri"}|where{$_ -ne "http:"}|where{$_ -ne ":"}
+                                                                                    $input=$input.replace(" ","")
+                                                                                    $input=$input|where{$_ -ne " "}|where{$_ -ne $repo}
+                                                                                    $input="$input".replace("        ","")
+                                                                                    $input=$input.split(" ")
+                                                                                    $input=$input|where{$_ -ne " "}
+
+                                                                                    $gh=$input[-2]
+                                                                                    $input=$input|where{$_ -ne $gh}
+
+                                                                                    $input="$input".replace(" ","/")
+                                                                                   #$input
+                                                                                  
+                                                                                    $path=$input
+
+                                                                                    $path="$path" 
+                                                                                    $path=$path|where{$_ -ne " "}
+                                                                                    $path=$path|select -uniq
+                                                                                     $vd=$va[0]
+                                                                                     #$vd
+                                                                                     
+                                                                                    
+                                                                                    $path=$path|where{$_ -ne $vd}
+                                                                                  
+                                                                                    
+                                                                                  
+
+                                                                                    if($path -eq $null)
+                                                                                            {
+                                                                                            $path="/"
+                                                                                           #$path
+                                                                                            }
+
+                                                                              else
+                                                                              {
+                                                                                    
+                                                                                            $pa=$va[0].split(".")
+                                                                                            $pa=$pa|where{$_ -ne $pa[-1]}|where{$_ -ne $pa[-2]}|where{$_ -ne $pa[-3]}|where{$_ -ne $pa[-4]}|where{$_ -ne $pa[-5]}
+                                                                                            $pa2="$pa".replace(" ",".")
+                                                                                            $pa3="$pa".replace(" ","/")
+                                                                                            $path=$pa3+"/"+$pa2+"/"
+                                                                                   
+                                                                                   
+                                                                                    if($path -eq "//")
+                                                                                            {
+                                                                                            $path=$vas[0]+"/"
+                                                                                            #$path
+                                                                                                }
+                                                                                        else{
+
+                                                                                           $path=$path
+                                                                                                }
+                                                                                    }
+
+                              
+                              
+                                
+                                                $timer = (Get-Date -Format yyy-mm-dd-hhmm)
+       
+                                                $uri = "http://$server/artifactory/ui/artifactactions/delete"  #url where we need to post
+                                                $uri=$uri.replace(" :",":")
+                                                
+                                                $header = @{"Content-Type" = "application/json"; "authorization"=$authorization}
+                                                $path=$path.replace("null","")
+                                                $hash= @{"repoKey"="$repo";"path"="$Path$ar"} #it will give input here
+                                            
+                                             
+                                                $JSON =$hash | ConvertTo-Json
+                                                
+                                              $resultout =  Invoke-RestMethod -Uri $uri -Method Post -body $json -headers $header 
+                                                [array]$output+=$ar
+                                                  
+                                                     if($ad[-4] -eq "*")
+                                             {
+                                             $Artifact=$Artifact.replace("*.*.*.nupkg","$timer")
+                                             
+                                             }
+                                             else
+                                             {
+                                             $Artifact=$Artifact.replace("*.*.nupkg","$timer")
+                                             }
+                                             	
+                                             #-------------------------------------------------------------------change path-----------------
+
+                                                 $output=Write-output "$output"|Out-File .\$Artifact.txt
+                                                
+                                                " Successfully Deleted $ar"
+
+                                            #---------------------------------------------------------------------Change Path--------------
+                                          
+                                                  
+                                     
+                                                      
+        
+                             }     
+                              
+                               
+                            
+                                 
+             }
+             
+                                     
+                                        
+                                            
+
+
+                                                              else  {   
+                                         $va=@()   
+                                          $tr=@() 
+                                        
+                                                               $delt
+                                                               $delt=@()
+	                                                                   "--------------------------Warning-----------------------------------------"
+                                                                       "you have selected not to delete old builds from artifactory"
+                                                                   "**************************************************************************"
+                                                                   "**************************************************************************"
+                                                                   "**************************************************************************"
+                                                                   "***********************Builds not deleted********************************" 
+                                                                   "**************************************************************************"
+                                                                   "**************************************************************************"
+                                                                   "**************************************************************************"
+                                                                   "**************************************************************************"
+                                                          exit(0)
+                                       
+                                                                }
+
+       }
+         
+         
+         
+         
+         else
+              {
+              $va=@()   
+              $tr=@() 
+               "Artifacts are less than or Equal to $Artifacts_ToKeep "
+               exit(0)
+              
+              }
+             
+             
+             
+             
+         
+              }
+              
+     }
+    
+    
+    
+    
+    
+    
+     catch
+       {
+        Write-host $_.Exception.Message
+        exit (1)
+        $va=@()   
+      $tr=@()
+        }
+          
+      
+      
+      
+       
+       
+
+                                              
+                
+          
+       
+       
+   
+   
