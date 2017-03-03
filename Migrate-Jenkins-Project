@@ -1,0 +1,25 @@
+$name="FileAClaim-Selenium-Tests_ACPT"
+
+cls
+
+$config="http://jenmg0d1vnd01:8080/job/CustSol/job/Colonial/job/$name/config.xml"
+
+$header = @{"Content-Type" = "application/json"; "authorization"= "Basic YnUyMTY6Umltc2hhQDU0OA=="}
+#$output= Invoke-WebRequest -Uri $config -Method Get  -headers $header
+
+#write-output "$output"|out-file "c:\Temp\config.xml"
+
+
+
+
+
+$url="http://jenmg0prvnd01:8080/job/CS/job/Colonial/createItem?name=$name&mode=hudson.model.FreeStyleProject"
+
+
+     # $authorization="Basic YnUyMTY6Umltc2hhQDU0OA=="
+ $header = @{"Content-Type" = "application/json"; "authorization"="Basic YnUyMTY6Umltc2hhQDU0OA=="} # Here we need to enter our user id and password   
+   
+    $result1 =  Invoke-WebRequest -Uri $url -Method post  -headers $header # it will pull all values from artifact
+          
+
+          #curl -u bu216 --netrc --header 'Content-Type':'application/xml'  -X POST --data @C:\Users\bu216\Documents\jenkins-xml\config.xml http://jenmg0prvnd01:8080/job/SPT/job/EE/job/EEDemo/job/testing-wee/config.xml
