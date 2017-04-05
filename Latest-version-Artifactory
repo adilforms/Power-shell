@@ -1,0 +1,108 @@
+param(
+    $Server,# = "artif0prvnd01:8081",
+    $ArtifactGroup,# = "EOI-API",
+    $ArtifactName,# ="EOI-API",
+    $Repo#= "unum-nuget-deploy"
+)
+
+cls
+
+function Increment-PrereleaseVersion($prerelease) {
+    $charArray = $prerelease.ToCharArray()
+
+    for ($i = 0; $i -lt $charArray.Count; $i++) {
+        $charString = $charArray[$i].ToString()
+        if ($charString -match "[0-9]") {
+            $numberString += $charString
+        } else {
+            #$hasLetter = $true
+            $letterString += $charString
+        }
+    }
+
+    [int]$returnedInt = 0
+
+    if (!$numberString) { #1.0.0.23-alpha -> 1.0.0.23-alpha5
+        $returnedInt = 2
+    } else {
+        [bool]$result = [int]::TryParse($numberString, [ref]$returnedInt)
+
+        if ($result) {
+            $returnedInt++
+        } else {
+            throw "Could not convert $numberString to an integer."
+        }
+    }
+    
+    return $letterString += $returnedInt
+}
+
+function Get-LatestPackageVersion($server, $artifactGroup, $artifactName, $repo) {
+    #Jenkins AppID Api Key
+    $apiKey="AKCp2WWYocpsbYhS6YUdfRHRYzJw7VaYT49ahn56V1tooPTNNj6Joad3teK1tij7FcKphVuRm"
+    $url = "http://$server/artifactory/api/search/latestVersion?g=$artifactGroup&a=$artifactName&repos=$repo"
+
+    $header = @{ "Content-Type" = "application/json"; "X-JFrog-Art-Api" = $apiKey }
+    $response =  Invoke-WebRequest -Uri $url -Method GET -headers $header
+
+    return $response.Content
+}
+    
+function Increment-VersionNumber($version) {
+    $newVersion = ""
+    $versionNumbers = $version.Split(".")
+    if ($versionNumbers[-1] -match "-") {
+        $prereleaseVersionParts = $versionNumbers[-1].Split("-")
+        if ($prereleaseVersionParts.Count -gt 2) {
+            throw 'Prerelease is malformed. Cannot contain more than one dash "-".'
+        }
+        $firstPart = $prereleaseVersionParts[0]
+        $lastPart = $prereleaseVersionParts[1]
+        $lastPart = Increment-PrereleaseVersion $lastPart
+
+        $versionNumbers[-1] = $firstPart + "-" + $lastPart
+    } else {
+        $versionNumbers[-1] = [int]$versionNumbers[-1] + 1
+    }
+
+    for ($i = 0; $i -lt $versionNumbers.Count; $i++) {
+        if ($i -ge $versionNumbers.Count - 1) {
+            $newVersion += $versionNumbers[$i]
+        } else {
+            $newVersion += $versionNumbers[$i] + "."
+        }
+    }
+
+    return $newVersion
+}
+
+try {
+    if (!$Server) {
+        throw '$Server parameter cannot be empty'
+    }
+    if (!$ArtifactName) {
+        throw '$ArtifactName parameter cannot be empty'
+    }
+    if (!$Repo) {
+        throw '$Repo parameter cannot be empty'
+    }
+    if (!$ArtifactGroup) {
+        $ArtifactGroup = $ArtifactName
+    }
+
+    $latestVersion = GetLatestPackageVersion $Server $ArtifactGroup $ArtifactName $Repo
+
+    Write-Host "The current version is $latestVersion."
+
+    $nextVersion = IncrementVersionNumber $latestVersion
+
+    Write-Host "The next version will be $nextVersion."
+
+    Clear-Content ".\latest.txt"
+
+    Write-Output "VERSION=$nextVersion" | Out-File ".\latest.txt" -Encoding ASCII
+}
+catch {
+    Write-Host $_.Exception.Message
+    exit (1)
+}
